@@ -1,0 +1,64 @@
+service: rebugit-nodejs-lambda-example
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: ap-southeast-1
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    SECRET_NAME: map-quest-apikey
+  iamRoleStatements:
+    - Effect: Allow
+      Actions:
+        - secretmanager:GeSecretValue
+      Resources: "*"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "*"
+
+# you can add packaging information here
+package:
+  individually: true
+
+functions:
+  get:
+    handler: todos/get.get
+    events:
+      - http:
+          path: todos/{id}
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    TodosDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+
+    MapQuestApiKey:
+      Type: 'AWS::SecretsManager::Secret'
+      Properties:
+        Name: map-quest-apikey
+        Description: This secret has a hardcoded password in SecretString (use GenerateSecretString instead)
+        SecretString: '{"apiKey":"RxTPFT2cxBuPuE0BQHWUyAlbTvVFTrSE"}'

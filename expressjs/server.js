@@ -25,7 +25,10 @@ function myCustomIntegrationCallback(env, close, getData, wrap) {
 }
 
 const Rebugit = new RebugitSDK({
-    apiKey: 'insert api key here',
+    apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9qZWN0SWQiOiIzMTI3ODc1MC05NDUyLTQ4OGYtODNjNy1mYTYxZDcxZDcxZTQiLCJ0ZW5hbnRJZCI6IjFjNjJiZDc0LTQwMTYtNDBkZS1hNGJhLTZmMGZkYWU1ZjBmNyJ9.IYLawG70gdl5D3_OHZVV65KG0OEMh-CnqFBKbzEKoqo',
+    collector: {
+        collectorBaseUrl: "dev.api.rebugit.com"
+    }
 })
 
 const sequelize = new Sequelize('postgres://postgres:postgres@localhost:5432/postgres') // Example for postgres

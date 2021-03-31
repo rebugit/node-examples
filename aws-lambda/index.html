@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Get my weather</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+</head>
+<body>
+<nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+
+    <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item">
+                Home
+            </a>
+
+            <a class="navbar-item">
+                Documentation
+            </a>
+
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                    More
+                </a>
+
+                <div class="navbar-dropdown">
+                    <a class="navbar-item">
+                        About
+                    </a>
+                    <a class="navbar-item">
+                        Jobs
+                    </a>
+                    <a class="navbar-item">
+                        Contact
+                    </a>
+                    <hr class="navbar-divider">
+                    <a class="navbar-item">
+                        Report an issue
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="navbar-end">
+            <div class="navbar-item">
+                <div class="buttons">
+                    <a class="button is-primary">
+                        <strong>Sign up</strong>
+                    </a>
+                    <a class="button is-light">
+                        Log in
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="notification is-primary">
+        <h1 class="title is-1">My Weather</h1>
+    </div>
+
+    <br><br>
+
+
+    <div class="card">
+
+        <div id="error-section"></div>
+
+        <div class="card-image" style="padding: 50px">
+            <form id="form">
+                <label class="label">Your position</label>
+                <div id="demo"></div>
+                <br>
+                <label class="label" for="forecast-types">Choose a forecast:</label>
+
+                <select name="forecast" id="forecast-types">
+                    <option value="next_1_hours">Next hour</option>
+                    <option value="next_6_hours">Next 6 hours</option>
+                    <option value="next_12_hours">Next 12 hours</option>
+                    <option value="next_24_hours">Tomorrow</option>
+                </select>
+
+
+                <br><br>
+                <div class="field is-grouped">
+                    <p class="control">
+                        <button class="button is-success" id="submit-btn" type="submit">
+                            Get weather forecast
+                        </button>
+                    </p>
+                </div>
+
+            </form>
+        </div>
+        <div class="card-content">
+            <div class="media">
+                <div class="media-content">
+                    <h1 class="title is-2">Your forecast: </h1>
+                    <h1 style="color: coral;font-weight: bold" class="title is-2" id="result-number"></h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const x = document.getElementById("demo");
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } else {
+            x.innerHTML = "Geolocation is not supported by this browser.";
+        }
+    }
+
+
+    function showPosition(position) {
+        x.innerHTML = "Latitude: " + position.coords.latitude.toFixed(1) +
+            "<br>Longitude: " + position.coords.longitude.toFixed(1);
+    }
+
+    getLocation()
+
+    document.querySelector("#submit-btn").addEventListener('click', (e) => {
+        e.preventDefault()
+
+        const dropdown = document.getElementById('forecast-types')
+        const forecast = dropdown.options[dropdown.selectedIndex].value;
+
+        navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const long = position.coords.longitude;
+            axios({
+                method: "get",
+                url: `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${long}`,
+                // data: {
+                //     lat, long, forecast
+                // }
+            }).then(resp => {
+                console.log(resp.data)
+            }).catch(err => {
+                document.querySelector("#error-section").innerHTML = `
+		    <article class="message is-danger">
+			  <div class="message-header">
+				<p>ERROR!! ${err.response ? err.response.data : err.message}</p>
+				<button class="delete" aria-label="delete"></button>
+			  </div>
+			  <div class="message-body">
+				${err.response ? err.response.data : err.message}
+			  </div>
+			</article>
+		    `
+            })
+        });
+    })
+</script>
+</html>
