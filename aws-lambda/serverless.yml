@@ -10,11 +10,12 @@ provider:
   environment:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
     SECRET_NAME: map-quest-apikey
+    REBUGIT_LOG: ALL
   iamRoleStatements:
     - Effect: Allow
-      Actions:
-        - secretmanager:GeSecretValue
-      Resources: "*"
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: "*"
     - Effect: Allow
       Action:
         - dynamodb:Query
@@ -29,13 +30,16 @@ provider:
 package:
   individually: true
 
+plugins:
+  - serverless-offline
+
 functions:
-  get:
-    handler: todos/get.get
+  getWeather:
+    handler: handler.getWeather
     events:
       - http:
-          path: todos/{id}
-          method: get
+          path: weather
+          method: post
           cors: true
 
 resources:

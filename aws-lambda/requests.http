@@ -1,5 +1,10 @@
+POST http://localhost:3000/dev/weather
+Content-Type: application/json
+
+###
 GET https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=10.7&lon=106.7
 Accept: application/json
 User-Agent: 123
 
 ###
+

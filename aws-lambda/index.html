@@ -105,7 +105,7 @@
             <div class="media">
                 <div class="media-content">
                     <h1 class="title is-2">Your forecast: </h1>
-                    <h1 style="color: coral;font-weight: bold" class="title is-2" id="result-number"></h1>
+                    <h1 style="font-weight: bold" class="title is-4" id="weather-result"></h1>
                 </div>
             </div>
         </div>
@@ -136,7 +136,9 @@
 
     document.querySelector("#submit-btn").addEventListener('click', (e) => {
         e.preventDefault()
-
+        document.querySelector("#weather-result").innerHTML = ``
+        document.querySelector("#error-section").innerHTML = ``
+        document.getElementById('submit-btn').style.display = 'none'
         const dropdown = document.getElementById('forecast-types')
         const forecast = dropdown.options[dropdown.selectedIndex].value;
 
@@ -144,13 +146,23 @@
             const lat = position.coords.latitude;
             const long = position.coords.longitude;
             axios({
-                method: "get",
-                url: `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${long}`,
-                // data: {
-                //     lat, long, forecast
-                // }
+                method: "post",
+                url: `https://pplm5lp5je.execute-api.ap-southeast-1.amazonaws.com/dev/weather`,
+                data: {
+                    lat, long, forecast
+                },
+                headers: {
+                    "Content-Type": "application/json"
+                }
             }).then(resp => {
                 console.log(resp.data)
+                document.querySelector("#weather-result").innerHTML = `
+                <ul>
+                <li>Weather: ${resp.data.forecast}</li>
+                <li>City: ${resp.data.position.city}</li>
+                <li>Address: ${resp.data.position.address}</li>
+</ul>
+                `
             }).catch(err => {
                 document.querySelector("#error-section").innerHTML = `
 		    <article class="message is-danger">
@@ -163,6 +175,8 @@
 			  </div>
 			</article>
 		    `
+            }).finally(() => {
+                document.getElementById('submit-btn').style.display = 'block'
             })
         });
     })
