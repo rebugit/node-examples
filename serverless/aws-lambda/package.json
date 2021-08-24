@@ -10,12 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.876.0",
+    "aws-sdk": "^2.890.0",
     "axios": "^0.21.1",
-    "rbi-nodejs-agent": "^1.0.3",
+    "rbi-nodejs-agent": "^1.0.7",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "serverless": "^2.37.1",
     "serverless-offline": "^6.9.0"
   }
 }
