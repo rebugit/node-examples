@@ -8,30 +8,13 @@ const express = require('express')
 const app = express()
 const port = 9000
 
-function myCustomIntegrationCallback(env, close, getData, wrap) {
-    wrap(module, 'name', function (original) {
-        // integration logic
-        if (env === 'debug') {
-            // inject logic
-        }
-
-        // extract logic
-    })
-
-    return {
-        module: {},
-        name: 'cors'
-    }
-}
-
 const Rebugit = new RebugitSDK({
-    apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9qZWN0SWQiOiIzMTI3ODc1MC05NDUyLTQ4OGYtODNjNy1mYTYxZDcxZDcxZTQiLCJ0ZW5hbnRJZCI6IjFjNjJiZDc0LTQwMTYtNDBkZS1hNGJhLTZmMGZkYWU1ZjBmNyJ9.IYLawG70gdl5D3_OHZVV65KG0OEMh-CnqFBKbzEKoqo',
+    apiKey: process.env.REBUGIT_API_KEY,
     collector: {
-        collectorBaseUrl: "dev.api.rebugit.com"
+        collectorBaseUrl: process.env.REBUGIT_API_ENDPOINT
     }
 })
 
-const sequelize = new Sequelize('postgres://postgres:postgres@localhost:5432/postgres') // Example for postgres
 const getDataFromDatabase = async () => {
     const res = await sequelize.query('SELECT 1 + 5 * :multi AS result', {
         replacements: {
@@ -42,7 +25,7 @@ const getDataFromDatabase = async () => {
 }
 
 const callExternalAPI = async () => {
-    const resp = await axios.get('http://jsonplaceholder.typicode.com/todos/1')
+    const resp = await axios.get('https://jsonplaceholder.typicode.com/todos/1')
     return resp.data
 }
 

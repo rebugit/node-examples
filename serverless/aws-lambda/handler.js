@@ -6,9 +6,9 @@ const AWS = require('aws-sdk');
 const {RebugitSDK} = require('rbi-nodejs-agent');
 
 const rbi = new RebugitSDK({
-    apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9qZWN0SWQiOiIzMTI3ODc1MC05NDUyLTQ4OGYtODNjNy1mYTYxZDcxZDcxZTQiLCJ0ZW5hbnRJZCI6IjFjNjJiZDc0LTQwMTYtNDBkZS1hNGJhLTZmMGZkYWU1ZjBmNyJ9.IYLawG70gdl5D3_OHZVV65KG0OEMh-CnqFBKbzEKoqo',
+    apiKey: process.env.REBUGIT_API_KEY,
     collector: {
-        collectorBaseUrl: "dev.api.rebugit.com"
+        collectorBaseUrl: process.env.REBUGIT_API_ENDPOINT
     }
 })
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
