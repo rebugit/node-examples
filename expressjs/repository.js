@@ -2,7 +2,14 @@ const axios = require('axios');
 const AWS = require('aws-sdk');
 
 class TodoRepository {
+  constructor(db) {
+    this.db = db
+  }
+
   async findAll() {
+    return this.db.Todo.findAll({
+      include: this.db.Address
+    });
   }
 
   async create() {
@@ -16,6 +23,10 @@ class TodoRepository {
 }
 
 class WeatherForecastRepository {
+  constructor(db) {
+    this.db = db
+  }
+
   getByPosition = async (lat, long) => {
     const resp = await axios({
       method: "get",
@@ -31,7 +42,7 @@ class WeatherForecastRepository {
 
   getWeatherEmoji = (result, forecastType) => {
     const symbolCode = result.data[forecastType].summary.symbol_code;
-    switch (symbolCode){
+    switch (symbolCode) {
       case "partlycloudy_day":
         return "🌤";
       case "fair":
@@ -46,8 +57,27 @@ class WeatherForecastRepository {
   }
 }
 
-class LocationRepository {
-  async getCity(lat, lon, apiKey) {
+class PositionRepository {
+  constructor(db) {
+    this.db = db
+  }
+
+  async getLocationByCity(city, apiKey) {
+    const url = `https://www.mapquestapi.com/geocoding/v1/address?key=${apiKey}&location=${city}`
+    const resp = await axios({
+      method: 'get',
+      url
+    })
+    return {
+      latitude: resp.data.results[0].locations[0].latLng.lat,
+      longitude: resp.data.results[0].locations[0].latLng.lng,
+    }
+  }
+
+  async updateLocation() {
+  }
+
+  async getAddressByLocation(lat, lon, apiKey) {
     const url = `https://www.mapquestapi.com/geocoding/v1/reverse?key=${apiKey}&location=${lat}%2C${lon}&outFormat=json&thumbMaps=false`
     const resp = await axios({
       method: 'get',
@@ -56,7 +86,7 @@ class LocationRepository {
 
     return {
       city: resp.data.results[0].locations[0].adminArea5,
-      address: resp.data.results[0].locations[0].street
+      address: resp.data.results[0].locations[0].street,
     }
   }
 }
@@ -72,4 +102,11 @@ class AWSServicesRepository {
     const resp = await this.secretsManager.getSecretValue({SecretId: process.env.SECRET_NAME}).promise()
     return JSON.parse(resp.SecretString).apiKey;
   }
+}
+
+module.exports = {
+  TodoRepository,
+  WeatherForecastRepository,
+  PositionRepository,
+  AWSServicesRepository
 }
