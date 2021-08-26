@@ -15,6 +15,10 @@ services:
       - DB_USER=postgres
       - DB_NAME=postgres
       - PORT=8080
+      - AWS_REGION=ap-southeast-1
+      - SECRET_NAME=map-quest-apikey
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
     depends_on:
       - db
 

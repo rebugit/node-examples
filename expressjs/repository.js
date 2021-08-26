@@ -1,5 +1,6 @@
 const axios = require('axios');
 const AWS = require('aws-sdk');
+const {DataTypes} = require("sequelize");
 
 class TodoRepository {
   constructor(db) {
@@ -12,7 +13,8 @@ class TodoRepository {
     });
   }
 
-  async create() {
+  async createWithT(todo, t) {
+    return this.db.Todo.create(todo, {transaction: t})
   }
 
   async update() {
@@ -20,40 +22,9 @@ class TodoRepository {
 
   async deleteById() {
   }
-}
 
-class WeatherForecastRepository {
-  constructor(db) {
-    this.db = db
-  }
-
-  getByPosition = async (lat, long) => {
-    const resp = await axios({
-      method: "get",
-      url: `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${long}`,
-    })
-
-    const forecast = resp.data.properties.timeseries[0]
-    return {
-      time: forecast.time,
-      forecast: forecast.data
-    }
-  }
-
-  getWeatherEmoji = (result, forecastType) => {
-    const symbolCode = result.data[forecastType].summary.symbol_code;
-    switch (symbolCode) {
-      case "partlycloudy_day":
-        return "🌤";
-      case "fair":
-      case "clearsky_day":
-        return "🌞"
-      case "cloudy_day":
-      case "cloudy":
-        return " ☁"
-      default:
-        return "⛈"
-    }
+  async startT(transactionCb) {
+    return this.db.sequelize.transaction(transactionCb)
   }
 }
 
@@ -68,13 +39,23 @@ class PositionRepository {
       method: 'get',
       url
     })
+
     return {
       latitude: resp.data.results[0].locations[0].latLng.lat,
       longitude: resp.data.results[0].locations[0].latLng.lng,
     }
   }
 
-  async updateLocation() {
+  async createLocationWithT(location, addressId, t) {
+    return this.db.Location.create({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      address_id: addressId
+    }, {transaction: t})
+  }
+
+  async createAddressWithT(address, todoId, t) {
+    return this.db.Address.create({...address, todo_id: todoId}, {transaction: t})
   }
 
   async getAddressByLocation(lat, lon, apiKey) {
@@ -87,6 +68,58 @@ class PositionRepository {
     return {
       city: resp.data.results[0].locations[0].adminArea5,
       address: resp.data.results[0].locations[0].street,
+    }
+  }
+}
+
+class WeatherForecastRepository {
+  constructor(db) {
+    this.db = db
+  }
+
+  getByPosition = async (lat, long) => {
+    const resp = await axios({
+      method: "get",
+      url: `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${long}`,
+    })
+
+    const forecast = {}
+
+    resp.data.properties.timeseries.forEach(obj => {
+      const code = obj.data.next_1_hours.summary.symbol_code
+      forecast[obj.time] = {
+        time: obj.time,
+        weather: {
+          code,
+          detail: obj.data.next_1_hours.details,
+          emoji: this.getWeatherEmoji(code)
+        }
+      }
+    })
+    return forecast
+  }
+
+  getAtLocationAndDate =  async (location, date) => {
+    // this is the isoDate format: 2021-08-26T02:25:25.035Z"
+    // we have to transform it into: 2021-08-26T02:00:00Z"
+    const isoDate = new Date(date).toISOString()
+    const time = isoDate.split(':')[0] + ":00:00Z";
+    const forecast = await this.getByPosition(location.latitude, location.longitude);
+    return forecast[time]
+  }
+
+  getWeatherEmoji = (symbolCode) => {
+    switch (symbolCode) {
+      case "partlycloudy_day":
+        return "🌤";
+      case "fair":
+      case "clearsky_day":
+        return "🌞"
+      case "cloudy_day":
+      case "cloudy":
+        return " ☁"
+      default:
+        return "⛈"
     }
   }
 }

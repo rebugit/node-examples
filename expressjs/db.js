@@ -10,7 +10,10 @@ const Todo = sequelize.define("todo", {
   },
   task: DataTypes.TEXT,
   date: DataTypes.TEXT,
-  isCompleted: DataTypes.INTEGER
+  isCompleted: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  }
 });
 
 const Address = sequelize.define("address", {

@@ -6,10 +6,11 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
   <link rel="stylesheet" href="main.css">
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="main.js"></script>
+  <script>
+    // Global variables
+    window.__env__ = {}
+    window.__env__.API_ENDPOINT = "http://docker:8080"
+  </script>
 </head>
 <body>
 
@@ -19,45 +20,15 @@
       <div class="col-md-12">
         <div class="card px-3">
           <div class="card-body">
-            <h4 class="card-title">Awesome Todo list</h4>
-            <div class="add-items d-flex"><input type="text" class="form-control todo-list-input"
-                                                 placeholder="What do you need to do today?">
+            <h4 class="card-title">Weather TODO</h4>
+            <div class="add-items d-flex">
+              <input id="input__task" type="text" class="form-control todo-list-input" placeholder="What do you need to do today?">
+              <input id="input__city" type="text" class="form-control todo-list-input" placeholder="Location">
+              <input id="input__date" type="date" class="form-control todo-list-input" placeholder="Date">
               <button class="add btn btn-primary font-weight-bold todo-list-add-btn">Add</button>
             </div>
             <div class="list-wrapper">
               <ul class="d-flex flex-column-reverse todo-list">
-                <li>
-                  <div class="form-check"><label class="form-check-label"> <input class="checkbox" type="checkbox"> For
-                    what reason would it be advisable. <i class="input-helper"></i></label></div>
-                  <i class="remove mdi mdi-close-circle-outline"></i>
-                </li>
-                <li class="completed">
-                  <div class="form-check"><label class="form-check-label"> <input class="checkbox" type="checkbox"
-                                                                                  checked=""> For what reason would it
-                    be advisable for me to think. <i class="input-helper"></i></label></div>
-                  <i class="remove mdi mdi-close-circle-outline"></i>
-                </li>
-                <li>
-                  <div class="form-check"><label class="form-check-label"> <input class="checkbox" type="checkbox"> it
-                    be advisable for me to think about business content? <i class="input-helper"></i></label></div>
-                  <i class="remove mdi mdi-close-circle-outline"></i>
-                </li>
-                <li>
-                  <div class="form-check"><label class="form-check-label"> <input class="checkbox" type="checkbox">
-                    Print Statements all <i class="input-helper"></i></label></div>
-                  <i class="remove mdi mdi-close-circle-outline"></i>
-                </li>
-                <li class="completed">
-                  <div class="form-check"><label class="form-check-label"> <input class="checkbox" type="checkbox"
-                                                                                  checked=""> Call Rampbo <i
-                    class="input-helper"></i></label></div>
-                  <i class="remove mdi mdi-close-circle-outline"></i>
-                </li>
-                <li>
-                  <div class="form-check"><label class="form-check-label"> <input class="checkbox" type="checkbox">
-                    Print bills <i class="input-helper"></i></label></div>
-                  <i class="remove mdi mdi-close-circle-outline"></i>
-                </li>
               </ul>
             </div>
           </div>
@@ -68,8 +39,8 @@
 </div>
 
 </body>
-<script>
-
-
-</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="main.js"></script>
 </html>
