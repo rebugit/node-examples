@@ -9,7 +9,14 @@ class TodoRepository {
 
   async findAll() {
     return this.db.Todo.findAll({
-      include: this.db.Address
+      include: [
+        {
+          model: this.db.Address
+        },
+        {
+          model: this.db.WeatherForecast
+        }
+      ]
     });
   }
 
@@ -20,7 +27,8 @@ class TodoRepository {
   async update() {
   }
 
-  async deleteById() {
+  async deleteById(todoId) {
+    return this.db.Todo.destroy({where: {id: todoId}})
   }
 
   async startT(transactionCb) {
@@ -46,10 +54,11 @@ class PositionRepository {
     }
   }
 
-  async createLocationWithT(location, addressId, t) {
+  async createLocationWithT(location, todoId, addressId, t) {
     return this.db.Location.create({
       latitude: location.latitude,
       longitude: location.longitude,
+      todo_id: todoId,
       address_id: addressId
     }, {transaction: t})
   }
@@ -86,20 +95,25 @@ class WeatherForecastRepository {
     const forecast = {}
 
     resp.data.properties.timeseries.forEach(obj => {
-      const code = obj.data.next_1_hours.summary.symbol_code
+      // Sometimes one forecast is not present, so we pick the first available
+      const weather = obj.data.next_1_hours || obj.data.next_6_hours || obj.data.next_12_hours
+      if (!weather) {
+        return
+      }
+      const code = weather.summary.symbol_code
       forecast[obj.time] = {
         time: obj.time,
         weather: {
           code,
-          detail: obj.data.next_1_hours.details,
-          emoji: this.getWeatherEmoji(code)
+          detail: weather.details,
+          emoji: WeatherForecastRepository.getWeatherEmoji(code)
         }
       }
     })
     return forecast
   }
 
-  getAtLocationAndDate =  async (location, date) => {
+  getAtLocationAndDate = async (location, date) => {
     // this is the isoDate format: 2021-08-26T02:25:25.035Z"
     // we have to transform it into: 2021-08-26T02:00:00Z"
     const isoDate = new Date(date).toISOString()
@@ -108,11 +122,21 @@ class WeatherForecastRepository {
     return forecast[time]
   }
 
-  getWeatherEmoji = (symbolCode) => {
+  createWithT = async (weather, todoId, locationId, t) => {
+    return this.db.WeatherForecast.create({
+      location_id: locationId,
+      todo_id: todoId,
+      time: weather.time,
+      weather: weather.weather
+    }, {transaction: t})
+  }
+
+  static getWeatherEmoji = (symbolCode) => {
     switch (symbolCode) {
       case "partlycloudy_day":
         return "🌤";
       case "fair":
+      case "fair_day":
       case "clearsky_day":
         return "🌞"
       case "cloudy_day":

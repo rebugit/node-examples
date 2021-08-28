@@ -1,6 +1,11 @@
-#!/usr/bin/env sh
+#!/bin/bash
 
-export AWS_ACCESS_KEY_ID=$(sed -nr "/^\[default\]/ { :l /^aws_access_key_id[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ~/.aws/credentials)
-export AWS_SECRET_ACCESS_KEY=$(sed -nr "/^\[default\]/ { :l /^aws_secret_access_key[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ~/.aws/credentials)
+JSON_BASEPATH="${HOME}/.aws/cli/cache"
+json_file=$(ls -tr "${JSON_BASEPATH}" | tail -n1)
+export AWS_ACCESS_KEY_ID=$(cat ${JSON_BASEPATH}/${json_file} | jq -r '.Credentials.AccessKeyId')
+export AWS_SECRET_ACCESS_KEY=$(cat ${JSON_BASEPATH}/${json_file} | jq -r '.Credentials.SecretAccessKey')
+export AWS_SESSION_TOKEN=$(cat ${JSON_BASEPATH}/${json_file} | jq -r '.Credentials.SessionToken')
+
+aws sts get-caller-identity > /dev/null;
 
 docker-compose up --build --remove-orphans

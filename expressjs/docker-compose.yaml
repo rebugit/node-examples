@@ -15,10 +15,11 @@ services:
       - DB_USER=postgres
       - DB_NAME=postgres
       - PORT=8080
-      - AWS_REGION=ap-southeast-1
-      - SECRET_NAME=map-quest-apikey
+      - AWS_REGION=us-east-1
+      - SECRET_NAME=example/mapQuestApikey
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
     depends_on:
       - db
 
