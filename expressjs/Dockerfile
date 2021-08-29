@@ -9,6 +9,8 @@ COPY db.js /app/db.js
 COPY server.js /app/server.js
 COPY repository.js /app/repository.js
 COPY controller.js /app/controller.js
+COPY auth.js /app/auth.js
+COPY proxy.js /app/proxy.js
 
 EXPOSE 8080
 

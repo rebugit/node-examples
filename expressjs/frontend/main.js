@@ -8,13 +8,19 @@
     const rescheduleModalDate = $('#reschedule-modal__input__date');
     const rescheduleModalId = $('#reschedule-modal__input__id');
     const rescheduleModalSaveButton = $('#reschedule-modal__input__save-btn')
+
+    const loginModalEmail = $('#login-modal__input__email');
+    const loginModalPassword = $('#login-modal__input__password');
+    const loginModalLoginButton = $('#login-modal__input__login-btn');
     const todoListItem = $('.todo-list');
     const AddTodoButton = $('.todo-list-add-btn');
 
-    function appendTodo(todo) {
-      console.log(todo.city)
-      todoListItem.append(
-        `<li>
+    function isToday(todoDate) {
+      return new Date().toISOString().split('T')[0] === todoDate
+    }
+
+    function renderTodoListItem(todo) {
+      return `<li id="${todo.id}" class="${isToday(todo.date) ? 'completed' : ''}">
           <div class='form-check'>
             <label class='form-check-label'>
                <input class='checkbox' type='checkbox' />`
@@ -38,7 +44,11 @@
 <!--           <button style="margin-left: 5px;padding: 5px" type="button" class="btn btn-info btn-sm">Check weather</button>-->
            <i data-id="${todo.id}" class='remove mdi mdi-close-circle-outline'></i> 
           </li>`
-      );
+    }
+
+    function appendTodo(todo) {
+      console.log(todo.city)
+      todoListItem.append(renderTodoListItem(todo));
     }
 
     AddTodoButton.on("click", function (event) {
@@ -51,7 +61,7 @@
       console.log(item)
       AddTodoButton.prop('disabled', true);
       axios
-        .post(`${window.__env__.API_ENDPOINT}/todos`, item)
+        .post(`${window.__env__.API_ENDPOINT}/todos`, item, {headers: {'Authorization': localStorage.getItem('token')}})
         .then(resp => {
           appendTodo(resp.data.data)
         })
@@ -74,7 +84,7 @@
       const element = $(this)
       const todoId = element.attr("data-id")
       axios
-        .delete(`${window.__env__.API_ENDPOINT}/todos/${todoId}`)
+        .delete(`${window.__env__.API_ENDPOINT}/todos/${todoId}`, {headers: {'Authorization': localStorage.getItem('token')}})
         .then(() => {
           element.parent().remove();
         })
@@ -94,26 +104,49 @@
     })
 
     rescheduleModalSaveButton.on('click', function () {
+      rescheduleModalSaveButton.prop('disabled', true);
       const item = {
         date: rescheduleModalDate.val(),
         city: rescheduleModalCity.val()
       }
       const todoId = rescheduleModalId.val();
       axios
-        .put(`${window.__env__.API_ENDPOINT}/todos/${todoId}`, item)
+        .put(`${window.__env__.API_ENDPOINT}/todos/${todoId}/reschedule`, item, {headers: {'Authorization': localStorage.getItem('token')}})
         .then(resp => {
           $('#rescheduleModal').modal('hide')
-          $(`button[data-id]=${todoId}`)
+          $(`#${todoId}`).replaceWith(renderTodoListItem(resp.data.data))
+        })
+        .finally(() => {
+          rescheduleModalSaveButton.prop('disabled', false);
+        })
+    })
+
+    loginModalLoginButton.on('click', function () {
+      loginModalLoginButton.prop('disabled', true);
+      const item = {
+        email: loginModalEmail.val(),
+        password: loginModalPassword.val()
+      }
+      axios
+        .post(`${window.__env__.API_ENDPOINT}/login`, item, {headers: {'Authorization': localStorage.getItem('token')}})
+        .then(resp => {
+          $('#loginModal').modal('hide')
+          localStorage.setItem('token', resp.data.token)
+        })
+        .finally(() => {
+          loginModalLoginButton.prop('disabled', false);
         })
     })
 
     window.onload = function () {
-      axios.get(`${window.__env__.API_ENDPOINT}/todos`).then(resp => {
-        resp.data.data.forEach(todo => {
-          console.log(todo)
-          appendTodo(todo)
+      axios
+        .get(`${window.__env__.API_ENDPOINT}/todos`, {headers: {'Authorization': localStorage.getItem('token')}})
+        .then(resp => {
+          resp.data.data.forEach(todo => {
+            console.log(todo)
+            appendTodo(todo)
+          })
         })
-      })
     }
   });
 })(jQuery);

@@ -6,6 +6,7 @@ const bodyParser = require('body-parser')
 const express = require('express')
 const {Controller} = require("./controller");
 const {TodoRepository, PositionRepository, AWSServicesRepository, WeatherForecastRepository} = require("./repository");
+const {login, isLoggedIn} = require("./auth");
 const app = express()
 const port = process.env.PORT
 
@@ -21,6 +22,12 @@ process.on('SIGINT', () => {
   process.exit(0)
 })
 
+const todoRepository = new TodoRepository(db)
+const positionRepository = new PositionRepository(db)
+const weatherRepository = new WeatherForecastRepository(db)
+const awsServices = new AWSServicesRepository()
+const controller = new Controller(todoRepository, positionRepository, weatherRepository, awsServices)
+
 initDb()
   .then()
   .catch(e => {
@@ -28,20 +35,15 @@ initDb()
     process.exit(1)
   })
 
-const todoRepository = new TodoRepository(db)
-const positionRepository = new PositionRepository(db)
-const weatherRepository = new WeatherForecastRepository(db)
-const awsServices = new AWSServicesRepository()
-const controller = new Controller(todoRepository, positionRepository, weatherRepository, awsServices)
-
 app.use(cors())
 app.use(bodyParser.json())
 // app.use(Rebugit.Handlers().requestHandler({}))
 app.get('/', controller.home)
-app.get('/todos', controller.getAllTodos)
-app.post('/todos', controller.createTodo)
-app.put('/todos/:todoId/reschedule', controller.rescheduleTodo)
-app.delete('/todos/:todoId', controller.deleteTodoById)
+app.post('/login', login)
+app.get('/todos', isLoggedIn, controller.getAllTodos)
+app.post('/todos', isLoggedIn, controller.createTodo)
+app.put('/todos/:todoId/reschedule', isLoggedIn, controller.rescheduleTodo)
+app.delete('/todos/:todoId', isLoggedIn, controller.deleteTodoById)
 
 // app.use(Rebugit.Handlers().errorHandler({}))
 

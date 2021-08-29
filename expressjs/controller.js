@@ -14,7 +14,7 @@ class Controller {
 
   getAllTodos = async (req, res, next) => {
     try {
-      const response = await this.todoRepository.findAll();
+      const response = await this.todoRepository.findAll(req.userId);
 
       const dtos = response.map(todo => ({
         id: todo.id,
@@ -37,12 +37,12 @@ class Controller {
   createTodo = async (req, res, next) => {
     try {
       const {task, date, city} = req.body
+      const apiKey = await this.awsServiceRepository.getSecretManagerApiKey();
+      console.log("Got API Key for mapQuest")
+      const location = await this.positionRepository.getLocationByCity(city, apiKey);
+      console.log(`Got position for ${city}`)
 
       const result = await this.todoRepository.startT(async (t) => {
-        const apiKey = await this.awsServiceRepository.getSecretManagerApiKey();
-        console.log("Got API Key for mapQuest")
-        const location = await this.positionRepository.getLocationByCity(city, apiKey);
-        console.log(`Got position for ${city}`)
         const createdTodo = await this.todoRepository.createWithT({task, date}, t);
         console.log("Todo created")
         const createdAddress = await this.positionRepository.createAddressWithT({city}, createdTodo.id, t);
@@ -73,16 +73,32 @@ class Controller {
   }
 
   rescheduleTodo = async (req, res, next) => {
-    const {todoId, city, date} = req.body
-
-  }
-
-  checkWeatherForTodo = async (req, res, next) => {
     try {
       const {todoId} = req.params
-      const location = await this.positionRepository.getLocationByTodoId(todoId);
-      const weather = await this.weatherRepository.getAtLocationAndDate(location, createdTodo.date);
-      await this.weatherRepository.createWithT(weather, "")
+      const {city, date} = req.body
+      const apiKey = await this.awsServiceRepository.getSecretManagerApiKey();
+      console.log("Got API Key for mapQuest")
+      const location = await this.positionRepository.getLocationByCity(city, apiKey);
+      console.log(`Got location for ${city}`)
+      const weather = await this.weatherRepository.getAtLocationAndDate(location, date);
+      console.log(`Weather found: ${weather.weather.emoji}`)
+      const result = await this.todoRepository.startT(async (t) => {
+        const updatedTodo = await this.todoRepository.updateByIdWithT(todoId, {city, date}, t);
+        await this.positionRepository.updateAddressByTodoIdWithT(todoId, {city}, t)
+        await this.weatherRepository.updateByTodoIdWithT(todoId, weather, t)
+        return {
+          id: todoId,
+          task: updatedTodo.task,
+          date: date,
+          city: city,
+          isCompleted: updatedTodo.isCompleted,
+          weather: weather.weather
+        }
+      })
+      res.status(200).send({
+        message: "Success",
+        data: result
+      })
     } catch (e) {
       next(e)
     }

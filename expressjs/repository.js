@@ -1,17 +1,19 @@
 const axios = require('axios');
 const AWS = require('aws-sdk');
-const {DataTypes} = require("sequelize");
 
 class TodoRepository {
   constructor(db) {
     this.db = db
   }
 
-  async findAll() {
+  async findAll(userId) {
     return this.db.Todo.findAll({
+      where: {
+        userId
+      },
       include: [
         {
-          model: this.db.Address
+          model: this.db.Address,
         },
         {
           model: this.db.WeatherForecast
@@ -24,7 +26,20 @@ class TodoRepository {
     return this.db.Todo.create(todo, {transaction: t})
   }
 
-  async update() {
+  async updateByIdWithT(todoId, todo, t) {
+    const response = await this.db.Todo.update({
+      city: todo.city,
+      date: todo.date
+    }, {
+      where: {
+        id: todoId
+      },
+      transaction: t,
+      returning: true,
+      plain: true
+    })
+
+    return response[1].dataValues
   }
 
   async deleteById(todoId) {
@@ -65,6 +80,17 @@ class PositionRepository {
 
   async createAddressWithT(address, todoId, t) {
     return this.db.Address.create({...address, todo_id: todoId}, {transaction: t})
+  }
+
+  async updateAddressByTodoIdWithT(todoId, address, t) {
+    return this.db.Address.update({
+      ...address
+    }, {
+      where: {
+        todo_id: todoId
+      },
+      transaction: t
+    })
   }
 
   async getAddressByLocation(lat, lon, apiKey) {
@@ -129,6 +155,17 @@ class WeatherForecastRepository {
       time: weather.time,
       weather: weather.weather
     }, {transaction: t})
+  }
+
+  updateByTodoIdWithT = async (todoId, weather, t) => {
+    return this.db.WeatherForecast.update({
+      ...weather
+    }, {
+      where: {
+        todo_id: todoId
+      },
+      transaction: t
+    })
   }
 
   static getWeatherEmoji = (symbolCode) => {

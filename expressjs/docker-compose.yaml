@@ -14,6 +14,11 @@ services:
       - DB_PASSWORD=postgres
       - DB_USER=postgres
       - DB_NAME=postgres
+      - MYSQL_DB_HOST=userdb
+      - MYSQL_DB_PORT=3306
+      - MYSQL_DB_PASSWORD=mysql
+      - MYSQL_DB_USER=mysql
+      - MYSQL_DB_NAME=mysql
       - PORT=8080
       - AWS_REGION=us-east-1
       - SECRET_NAME=example/mapQuestApikey
@@ -22,6 +27,7 @@ services:
       - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
     depends_on:
       - db
+      - userdb
 
   db:
     image: postgres
@@ -32,8 +38,12 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
 
-#  frontned:
-#    build:
-#      dockerfile: frontend.Dockerfile
-#    ports:
-#      - "3000:3000"
+  userdb:
+    image: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_USER=mysql
+      - MYSQL_PASSWORD=mysql
+      - MYSQL_DATABASE=mysql
+      - MYSQL_ROOT_PASSWORD=mysql
