@@ -10,6 +10,10 @@ async function isLoggedIn(req, res, next) {
       }
     });
 
+    if (!foundUser) {
+      return res.status(401).send({message: "no user found"})
+    }
+
     req.userId = foundUser.id
     return next()
   }
@@ -27,6 +31,10 @@ async function login(req, res, next) {
       }
     })
 
+    if (!foundUser) {
+      return signUp(req, res, next)
+    }
+
     bcrypt.compare(password, foundUser.password, (err, isEqual) => {
       if (err) {
         next(err)
@@ -43,6 +51,22 @@ async function login(req, res, next) {
         message: "Invalid credentials",
       })
     });
+  } catch (e) {
+    next(e)
+  }
+}
+
+async function signUp(req, res, next) {
+  try {
+    const {email, password} = req.body
+    const createdUser = await db.User.create({
+      email, password
+    });
+
+    return res.status(201).send({
+      message: `Signed up new user with email: ${email}`,
+      token: createdUser.id
+    })
   } catch (e) {
     next(e)
   }

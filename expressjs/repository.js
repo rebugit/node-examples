@@ -32,7 +32,8 @@ class TodoRepository {
       date: todo.date
     }, {
       where: {
-        id: todoId
+        id: todoId,
+        userId: todo.userId
       },
       transaction: t,
       returning: true,
@@ -42,8 +43,8 @@ class TodoRepository {
     return response[1].dataValues
   }
 
-  async deleteById(todoId) {
-    return this.db.Todo.destroy({where: {id: todoId}})
+  async deleteById(todoId, userId) {
+    return this.db.Todo.destroy({where: {id: todoId, userId}})
   }
 
   async startT(transactionCb) {

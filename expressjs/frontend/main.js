@@ -14,6 +14,7 @@
     const loginModalLoginButton = $('#login-modal__input__login-btn');
     const todoListItem = $('.todo-list');
     const AddTodoButton = $('.todo-list-add-btn');
+    const logoutButton = $('#logout-button');
 
     function isToday(todoDate) {
       return new Date().toISOString().split('T')[0] === todoDate
@@ -41,7 +42,6 @@
            >
               Reschedule
            </button>
-<!--           <button style="margin-left: 5px;padding: 5px" type="button" class="btn btn-info btn-sm">Check weather</button>-->
            <i data-id="${todo.id}" class='remove mdi mdi-close-circle-outline'></i> 
           </li>`
     }
@@ -61,7 +61,11 @@
       console.log(item)
       AddTodoButton.prop('disabled', true);
       axios
-        .post(`${window.__env__.API_ENDPOINT}/todos`, item, {headers: {'Authorization': localStorage.getItem('token')}})
+        .post(
+          `${window.__env__.API_ENDPOINT}/todos`,
+          item,
+          {headers: {'Authorization': localStorage.getItem('token')}}
+        )
         .then(resp => {
           appendTodo(resp.data.data)
         })
@@ -84,7 +88,10 @@
       const element = $(this)
       const todoId = element.attr("data-id")
       axios
-        .delete(`${window.__env__.API_ENDPOINT}/todos/${todoId}`, {headers: {'Authorization': localStorage.getItem('token')}})
+        .delete(
+          `${window.__env__.API_ENDPOINT}/todos/${todoId}`,
+          {headers: {'Authorization': localStorage.getItem('token')}}
+        )
         .then(() => {
           element.parent().remove();
         })
@@ -111,7 +118,11 @@
       }
       const todoId = rescheduleModalId.val();
       axios
-        .put(`${window.__env__.API_ENDPOINT}/todos/${todoId}/reschedule`, item, {headers: {'Authorization': localStorage.getItem('token')}})
+        .put(
+          `${window.__env__.API_ENDPOINT}/todos/${todoId}/reschedule`,
+          item,
+          {headers: {'Authorization': localStorage.getItem('token')}}
+        )
         .then(resp => {
           $('#rescheduleModal').modal('hide')
           $(`#${todoId}`).replaceWith(renderTodoListItem(resp.data.data))
@@ -128,24 +139,46 @@
         password: loginModalPassword.val()
       }
       axios
-        .post(`${window.__env__.API_ENDPOINT}/login`, item, {headers: {'Authorization': localStorage.getItem('token')}})
+        .post(
+          `${window.__env__.API_ENDPOINT}/login`,
+          item,
+          {headers: {'Authorization': localStorage.getItem('token')}}
+        )
         .then(resp => {
           $('#loginModal').modal('hide')
           localStorage.setItem('token', resp.data.token)
         })
         .finally(() => {
           loginModalLoginButton.prop('disabled', false);
+          location.reload()
         })
+    })
+
+    logoutButton.on('click', function () {
+      localStorage.removeItem('token')
+      location.reload()
     })
 
     window.onload = function () {
       axios
-        .get(`${window.__env__.API_ENDPOINT}/todos`, {headers: {'Authorization': localStorage.getItem('token')}})
+        .get(
+          `${window.__env__.API_ENDPOINT}/todos`,
+          {headers: {'Authorization': localStorage.getItem('token')}}
+        )
         .then(resp => {
           resp.data.data.forEach(todo => {
             console.log(todo)
             appendTodo(todo)
           })
+        })
+        .catch(err => {
+          if (err.response) {
+            if (err.response.status === 401) {
+              $('#loginModal').modal('show')
+              return
+            }
+            console.log(err)
+          }
         })
     }
   });

@@ -19,17 +19,18 @@
     <div class="row container d-flex justify-content-center">
       <div class="col-md-12">
         <div class="card px-3">
-          <div class="card-body">
-            <h4 class="card-title">Weather TODO</h4>
+          <div style="display: flex;flex-direction: row-reverse">
             <button
+              id="logout-button"
               type="button"
-              style="margin-bottom: 10px"
-              data-toggle="modal"
-              data-target="#loginModal"
+              style="margin-bottom: 10px; width: 10%"
               class="btn btn-primary font-weight-bold"
             >
-              Login
+              Logout
             </button>
+          </div>
+          <div class="card-body">
+            <h4 class="card-title">Weather TODO</h4>
             <div class="add-items d-flex">
               <input id="input__task" type="text" class="form-control todo-list-input" placeholder="What do you need to do today?">
               <input id="input__city" type="text" class="form-control todo-list-input" placeholder="Location">

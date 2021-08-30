@@ -36,14 +36,15 @@ class Controller {
 
   createTodo = async (req, res, next) => {
     try {
-      const {task, date, city} = req.body
+      const {task, date, city} = req.body;
+      const userId = req.userId;
       const apiKey = await this.awsServiceRepository.getSecretManagerApiKey();
       console.log("Got API Key for mapQuest")
       const location = await this.positionRepository.getLocationByCity(city, apiKey);
       console.log(`Got position for ${city}`)
 
       const result = await this.todoRepository.startT(async (t) => {
-        const createdTodo = await this.todoRepository.createWithT({task, date}, t);
+        const createdTodo = await this.todoRepository.createWithT({task, date, userId}, t);
         console.log("Todo created")
         const createdAddress = await this.positionRepository.createAddressWithT({city}, createdTodo.id, t);
         console.log("Address created")
@@ -75,7 +76,9 @@ class Controller {
   rescheduleTodo = async (req, res, next) => {
     try {
       const {todoId} = req.params
-      const {city, date} = req.body
+      const userId = req.userId;
+      const {city, date} = req.body;
+
       const apiKey = await this.awsServiceRepository.getSecretManagerApiKey();
       console.log("Got API Key for mapQuest")
       const location = await this.positionRepository.getLocationByCity(city, apiKey);
@@ -83,7 +86,7 @@ class Controller {
       const weather = await this.weatherRepository.getAtLocationAndDate(location, date);
       console.log(`Weather found: ${weather.weather.emoji}`)
       const result = await this.todoRepository.startT(async (t) => {
-        const updatedTodo = await this.todoRepository.updateByIdWithT(todoId, {city, date}, t);
+        const updatedTodo = await this.todoRepository.updateByIdWithT(todoId, {city, date, userId}, t);
         await this.positionRepository.updateAddressByTodoIdWithT(todoId, {city}, t)
         await this.weatherRepository.updateByTodoIdWithT(todoId, weather, t)
         return {
@@ -107,7 +110,9 @@ class Controller {
   deleteTodoById = async (req, res, next) => {
     try {
       const {todoId} = req.params
-      await this.todoRepository.deleteById(todoId)
+      const userId = req.userId;
+
+      await this.todoRepository.deleteById(todoId, userId)
       res.status(200).send({
         message: "Success",
         data: todoId
