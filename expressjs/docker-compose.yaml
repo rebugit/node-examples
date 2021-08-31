@@ -9,6 +9,7 @@ services:
     environment:
       - REBUGIT_API_KEY="<your project api key>"
       - REBUGIT_API_ENDPOINT="<the rebugit tracer api endpoint>"
+      - REBUGIT_LOG=ALL
       - DB_HOST=db
       - DB_PORT=5432
       - DB_PASSWORD=postgres
