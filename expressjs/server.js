@@ -37,7 +37,7 @@ initDb()
 
 app.use(cors())
 app.use(bodyParser.json())
-// app.use(Rebugit.Handlers().requestHandler({}))
+app.use(Rebugit.Handlers().requestHandler({}))
 app.get('/', controller.home)
 app.post('/login', login)
 app.get('/todos', isLoggedIn, controller.getAllTodos)
@@ -45,7 +45,7 @@ app.post('/todos', isLoggedIn, controller.createTodo)
 app.put('/todos/:todoId/reschedule', isLoggedIn, controller.rescheduleTodo)
 app.delete('/todos/:todoId', isLoggedIn, controller.deleteTodoById)
 
-// app.use(Rebugit.Handlers().errorHandler({}))
+app.use(Rebugit.Handlers().errorHandler({}))
 
 app.use(function onError(err, req, res, next) {
   console.log(err.message, err.stack)
